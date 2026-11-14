@@ -1,296 +1,89 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistem Manajemen User</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:30px}
-.container{max-width:1100px;margin:auto}
-.header{text-align:center;color:white;margin-bottom:25px}
-.header h1{font-size:32px;margin-bottom:5px}
-.card{background:white;border-radius:20px;padding:25px;margin-bottom:20px;box-shadow:0 10px 25px rgba(0,0,0,.15)}
-h2{color:#444;margin-bottom:15px}
-input,select{width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:10px;font-size:15px}
-input:focus,select:focus{outline:none;border-color:#667eea}
-button{border:none;padding:10px 18px;border-radius:10px;cursor:pointer;transition:.3s}
-button:hover{transform:translateY(-2px)}
-.btn-login,.btn-save{background:#667eea;color:white}
-.btn-edit{background:#f39c12;color:white;margin-right:6px}
-.btn-delete{background:#e74c3c;color:white}
-.profile-box{display:flex;align-items:center;gap:20px}
-.avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;display:flex;justify-content:center;align-items:center;font-size:32px;font-weight:bold}
-table{width:100%;border-collapse:collapse}
-thead{background:#667eea;color:white}
-th,td{padding:14px;text-align:left}
-tbody tr{border-bottom:1px solid #eee}
-tbody tr:hover{background:#f8f9ff}
-.role-admin{background:#e74c3c;color:white;padding:5px 10px;border-radius:20px;font-size:12px}
-.role-user{background:#27ae60;color:white;padding:5px 10px;border-radius:20px;font-size:12px}
-.hidden{display:none}
-.info-box{margin-top:10px;background:#eef2ff;padding:12px;border-radius:10px}
-.logout{background:#444;color:white;float:right}
-</style>
-</head>
-<body>
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
 
-<div class="container">
-  <div class="header">
-    <h1>👨‍💻 Sistem Manajemen User</h1>
-    <p>PBO CRUD | Cloudflare D1</p>
-  </div>
-
-  <!-- LOGIN -->
-  <div class="card" id="loginSection">
-    <h2>Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button class="btn-login" onclick="login()">Login</button>
-    <div class="info-box">
-      <b>Demo Akun</b><br><br>
-      Admin : admin / admin123<br>
-      User : user / user123
-    </div>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="hidden">
-    <button class="logout" onclick="logout()">Logout</button>
-    <br><br>
-
-    <!-- PROFILE -->
-    <div class="card">
-      <h2>Profile User</h2>
-      <div class="profile-box">
-        <div class="avatar" id="avatarUser">A</div>
-        <div id="profileData"></div>
-      </div>
-    </div>
-
-    <!-- CRUD FORM -->
-    <div class="card" id="crudSection">
-      <h2>Kelola Data User</h2>
-      <input type="hidden" id="editId">
-      <input type="text" id="formUsername" placeholder="Username">
-      <input type="password" id="formPassword" placeholder="Password (kosongkan jika tidak ubah)">
-      <input type="text" id="nama" placeholder="Nama">
-      <input type="email" id="email" placeholder="Email">
-      <select id="role">
-        <option value="User">User</option>
-        <option value="Admin">Admin</option>
-      </select>
-      <button class="btn-save" onclick="saveUser()">Simpan Data</button>
-    </div>
-
-    <!-- TABLE -->
-    <div class="card">
-      <h2>Data User</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Username</th>
-            <th>Nama</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="userTable"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<script>
-/* GANTI URL INI dengan URL Worker kamu */
-const API = "https://pbo1.anandatriyanti1506.workers.dev/";
-
-class Person {
-  constructor(nama, email) {
-    this.nama = nama;
-    this.email = email;
-  }
-  getInfo() {
-    return `${this.nama} - ${this.email}`;
-  }
-}
-
-class User extends Person {
-  constructor(id, username, nama, email, role) {
-    super(nama, email);
-    this.id = id;
-    this.username = username;
-    this.role = role;
-  }
-}
-
-function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("currentUser") || "null");
-}
-
-async function login() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
-
-  try {
-    const res = await fetch(`${API}/api/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      localStorage.setItem("currentUser", JSON.stringify(data.user));
-      showDashboard();
-    } else {
-      alert(data.message);
+    if (method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
     }
-  } catch (e) {
-    alert("Gagal terhubung ke server");
-  }
-}
 
-function logout() {
-  localStorage.removeItem("currentUser");
-  location.reload();
-}
+    const cors = {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "application/json",
+    };
 
-function showDashboard() {
-  const currentUser = getCurrentUser();
-  if (!currentUser) return;
+    try {
+      // LOGIN
+      if (path === "/api/login" && method === "POST") {
+        const { username, password } = await request.json();
+        const user = await env.DB.prepare(
+          "SELECT id, username, nama, email, role FROM users WHERE username = ? AND password = ?"
+        ).bind(username, password).first();
 
-  document.getElementById("loginSection").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
+        if (!user) {
+          return Response.json({ success: false, message: "Username atau password salah" }, { status: 401, headers: cors });
+        }
+        return Response.json({ success: true, user }, { headers: cors });
+      }
 
-  document.getElementById("avatarUser").innerHTML = currentUser.nama.charAt(0).toUpperCase();
-  document.getElementById("profileData").innerHTML = `
-    <p><b>Nama :</b> ${currentUser.nama}</p>
-    <p><b>Role :</b> ${currentUser.role}</p>
-    <p><b>Username :</b> ${currentUser.username}</p>
-  `;
+      // GET ALL USERS
+      if (path === "/api/users" && method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT id, username, nama, email, role FROM users ORDER BY id"
+        ).all();
+        return Response.json({ success: true, data: results }, { headers: cors });
+      }
 
-  // Hanya Admin yang bisa CRUD
-  if (currentUser.role === "User") {
-    document.getElementById("crudSection").style.display = "none";
-  }
+      // CREATE
+      if (path === "/api/users" && method === "POST") {
+        const { username, password, nama, email, role } = await request.json();
+        if (!username || !password || !nama || !email) {
+          return Response.json({ success: false, message: "Semua field wajib diisi" }, { status: 400, headers: cors });
+        }
+        try {
+          const result = await env.DB.prepare(
+            "INSERT INTO users (username, password, nama, email, role) VALUES (?, ?, ?, ?, ?)"
+          ).bind(username, password, nama, email, role || "User").run();
+          return Response.json({ success: true, message: "Data berhasil ditambahkan" }, { headers: cors });
+        } catch (e) {
+          return Response.json({ success: false, message: "Username sudah digunakan" }, { status: 409, headers: cors });
+        }
+      }
 
-  loadUsers();
-}
+      // UPDATE
+      if (path.startsWith("/api/users/") && method === "PUT") {
+        const id = path.split("/").pop();
+        const { username, password, nama, email, role } = await request.json();
 
-async function loadUsers() {
-  try {
-    const res = await fetch(`${API}/api/users`);
-    const data = await res.json();
-    let rows = "";
+        if (password) {
+          await env.DB.prepare(
+            "UPDATE users SET username=?, password=?, nama=?, email=?, role=? WHERE id=?"
+          ).bind(username, password, nama, email, role, id).run();
+        } else {
+          await env.DB.prepare(
+            "UPDATE users SET username=?, nama=?, email=?, role=? WHERE id=?"
+          ).bind(username, nama, email, role, id).run();
+        }
+        return Response.json({ success: true, message: "Data berhasil diupdate" }, { headers: cors });
+      }
 
-    (data.data || []).forEach((u, index) => {
-      const badge = u.role === "Admin"
-        ? '<span class="role-admin">Admin</span>'
-        : '<span class="role-user">User</span>';
+      // DELETE
+      if (path.startsWith("/api/users/") && method === "DELETE") {
+        const id = path.split("/").pop();
+        await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(id).run();
+        return Response.json({ success: true, message: "Data berhasil dihapus" }, { headers: cors });
+      }
 
-      rows += `
-        <tr>
-          <td>${index + 1}</td>
-          <td>${u.username}</td>
-          <td>${u.nama}</td>
-          <td>${u.email}</td>
-          <td>${badge}</td>
-          <td>
-            <button class="btn-edit" onclick="editUser(${u.id}, '${u.username}', '${u.nama}', '${u.email}', '${u.role}')">Edit</button>
-            <button class="btn-delete" onclick="deleteUser(${u.id})">Hapus</button>
-          </td>
-        </tr>
-      `;
-    });
-
-    document.getElementById("userTable").innerHTML = rows;
-  } catch (e) {
-    alert("Gagal memuat data");
-  }
-}
-
-async function saveUser() {
-  const id = document.getElementById("editId").value;
-  const username = document.getElementById("formUsername").value.trim();
-  const password = document.getElementById("formPassword").value;
-  const nama = document.getElementById("nama").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const role = document.getElementById("role").value;
-
-  if (!username || !nama || !email) {
-    alert("Lengkapi data!");
-    return;
-  }
-
-  if (!id && !password) {
-    alert("Password wajib diisi untuk user baru");
-    return;
-  }
-
-  const body = { username, nama, email, role };
-  if (password) body.password = password;
-
-  try {
-    const url = id ? `${API}/api/users/${id}` : `${API}/api/users`;
-    const method = id ? "PUT" : "POST";
-
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      alert(data.message);
-      clearForm();
-      loadUsers();
-    } else {
-      alert(data.message);
+      return Response.json({ success: false, message: "Not found" }, { status: 404, headers: cors });
+    } catch (err) {
+      return Response.json({ success: false, message: err.message }, { status: 500, headers: cors });
     }
-  } catch (e) {
-    alert("Gagal menyimpan data");
-  }
-}
-
-function editUser(id, username, nama, email, role) {
-  document.getElementById("editId").value = id;
-  document.getElementById("formUsername").value = username;
-  document.getElementById("formPassword").value = "";
-  document.getElementById("nama").value = nama;
-  document.getElementById("email").value = email;
-  document.getElementById("role").value = role;
-}
-
-async function deleteUser(id) {
-  if (!confirm("Hapus data ini?")) return;
-
-  try {
-    const res = await fetch(`${API}/api/users/${id}`, { method: "DELETE" });
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      loadUsers();
-    }
-  } catch (e) {
-    alert("Gagal menghapus");
-  }
-}
-
-function clearForm() {
-  document.getElementById("editId").value = "";
-  document.getElementById("formUsername").value = "";
-  document.getElementById("formPassword").value = "";
-  document.getElementById("nama").value = "";
-  document.getElementById("email").value = "";
-  document.getElementById("role").value = "User";
-}
-
-// Auto login
-if (getCurrentUser()) showDashboard();
-</script>
-</body>
-</html>
+  },
+};
