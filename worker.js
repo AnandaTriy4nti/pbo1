@@ -105,7 +105,7 @@ tbody tr:hover{background:#f8f9ff}
 
 <script>
 /* GANTI URL INI dengan URL Worker kamu */
-const API = "https://new01.marioaistwice.workers.dev";
+const API = "https://pbo1.anandatriyanti1506.workers.dev/";
 
 class Person {
   constructor(nama, email) {
